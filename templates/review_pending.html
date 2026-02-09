@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helios - Application Under Review</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #E8C547 0%, #D4A946 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-button-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 15px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .login-button-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%) !important;
+            color: white !important;
+            padding: 12px 24px !important;
+            border: 2px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            flex: unset !important;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+        }
+
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .modal h2 {
+            color: #333;
+            margin-bottom: 20px;
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        .login-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: #DAA520;
+            border-bottom-color: #DAA520;
+        }
+
+        .tab-button:hover {
+            color: #DAA520;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .modal label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .modal input[type="email"],
+        .modal input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .modal input[type="email"]:focus,
+        .modal input[type="password"]:focus {
+            outline: none;
+            border-color: #DAA520;
+            box-shadow: 0 0 5px rgba(218, 165, 32, 0.3);
+        }
+
+        .modal button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #E8C547 0%, #D4A946 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .modal button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(232, 197, 71, 0.4);
+        }
+
+        .modal button[type="submit"]:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .modal-message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+            font-weight: 500;
+        }
+
+        .modal-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .modal-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .modal-message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .approval-status {
+            background-color: #f0f4ff;
+            border-left: 4px solid #DAA520;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .approval-status.show {
+            display: block;
+        }
+
+        .approval-status h3 {
+            color: #DAA520;
+            margin-bottom: 10px;
+        }
+
+        .approval-status p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .approval-status p:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-approved {
+            color: #155724;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            color: #856404;
+            font-weight: 600;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #DAA520;
+            font-size: 18px;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .message-box {
+            background-color: #f0f4ff;
+            border-left: 4px solid #DAA520;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            text-align: left;
+        }
+
+        .message-box h3 {
+            color: #DAA520;
+            margin-bottom: 10px;
+        }
+
+        .message-box p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .message-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .email-display {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border: 2px solid #DAA520;
+        }
+
+        .email-display label {
+            display: block;
+            color: #DAA520;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .email-display .email {
+            color: #333;
+            font-size: 18px;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .details-box {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .details-box h4 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .detail-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            color: #666;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #E8C547 0%, #D4A946 100%);
+            color: white;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(218, 165, 32, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .waiting-text {
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background-color: #fff8e6;
+            color: #8B4513;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid #E8C547;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .success-icon {
+                font-size: 60px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✓</div>
+
+        <span class="status-badge">Application Submitted</span>
+
+        <h1>Thank You!</h1>
+        <p class="subtitle">Your Helios application has been received and is under review</p>
+
+        <div class="message-box">
+            <h3>What happens next?</h3>
+            <p>Your application is currently being reviewed by our admission team. We will carefully assess your information and get back to you as soon as possible.</p>
+            <p>You will receive an email at the address below with further instructions and details about your application status.</p>
+        </div>
+
+        <div class="email-display">
+            <label>Application Email:</label>
+            <div class="email">{{ email }}</div>
+        </div>
+
+        <div class="details-box">
+            <h4>Your Login Details (When Approved)</h4>
+            <div class="detail-item">
+                <span class="detail-label">Name:</span>
+                <p style="margin-top: 5px; font-size: 16px; color: #333; font-weight: 500;">{{ full_name }}</p>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Password:</span>
+                <p style="margin-top: 5px; font-size: 16px; color: #333; font-weight: 500; font-family: monospace; letter-spacing: 1px;">{{ password }}</p>
+            </div>
+            <p style="margin-top: 15px; font-size: 13px; color: #E74C3C; font-weight: 500;">⚠️ Keep these credentials safe. You'll use them to log in once your application is approved.</p>
+            <h4 style="margin-top: 30px;">Important Information</h4>
+            <div class="detail-item">
+                <span class="detail-label">✓ Your application has been saved</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">✓ Check your email regularly</span>
+                <p style="margin-top: 5px; font-size: 13px; color: #999;">We may ask for additional information if needed</p>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">✓ Review timeframe</span>
+                <p style="margin-top: 5px; font-size: 13px; color: #999;">Applications are typically reviewed within 2-4 weeks</p>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">✓ Add us to your contacts</span>
+                <p style="margin-top: 5px; font-size: 13px; color: #999;">This helps ensure our emails don't go to your spam folder</p>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="window.location.href='/'">Start New Application</button>
+            <button class="btn-secondary" onclick="window.location.href='/'">Go Home</button>
+        </div>
+
+        <p class="waiting-text">If you have any questions, please contact Helios admissions office.</p>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="login-button-container">
+        <button class="login-btn" onclick="window.location.href='/terms'">Sign Up</button>
+        <button class="login-btn" onclick="window.open('https://archive.example.com', '_blank')">View Archive</button>
+        <button class="login-btn" onclick="openLoginModal()">Check Status</button>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeLoginModal()">&times;</button>
+            
+            <h2>Login</h2>
+            
+            <div class="login-tabs">
+                <button class="tab-button active" onclick="switchTab('check-approval')">Check Approval</button>
+                <button class="tab-button" onclick="switchTab('change-password')">Change Password</button>
+            </div>
+
+            <!-- Check Approval Tab -->
+            <div id="check-approval" class="tab-content active">
+                <form id="approvalForm" onsubmit="checkApproval(event)">
+                    <div class="form-group">
+                        <label for="approvalEmail">Email Address</label>
+                        <input type="email" id="approvalEmail" name="email" required placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="approvalPassword">Password</label>
+                        <input type="password" id="approvalPassword" name="password" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit">Check Status</button>
+                    <div id="approvalMessage" class="modal-message"></div>
+                    <div id="approvalStatus" class="approval-status"></div>
+                </form>
+            </div>
+
+            <!-- Change Password Tab -->
+            <div id="change-password" class="tab-content">
+                <form id="passwordChangeForm" onsubmit="requestPasswordChange(event)">
+                    <div class="form-group">
+                        <label for="changeEmail">Email Address</label>
+                        <input type="email" id="changeEmail" name="email" required placeholder="Enter your email">
+                    </div>
+                    <button type="submit">Request Password Change</button>
+                    <div id="passwordChangeMessage" class="modal-message"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openLoginModal() {
+            document.getElementById('loginModal').classList.add('show');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('show');
+            // Reset forms
+            document.getElementById('approvalForm').reset();
+            document.getElementById('passwordChangeForm').reset();
+            document.getElementById('approvalMessage').textContent = '';
+            document.getElementById('approvalMessage').className = 'modal-message';
+            document.getElementById('passwordChangeMessage').textContent = '';
+            document.getElementById('passwordChangeMessage').className = 'modal-message';
+            document.getElementById('approvalStatus').className = 'approval-status';
+        }
+
+        // Scroll fade effect for buttons
+        window.addEventListener('scroll', function() {
+            const container = document.querySelector('.login-button-container');
+            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+            
+            if (scrollTop > 300) {
+                container.classList.add('hidden');
+            } else {
+                container.classList.remove('hidden');
+            }
+        });
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Deactivate all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function checkApproval(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('approvalEmail').value.trim();
+            const password = document.getElementById('approvalPassword').value;
+            const messageDiv = document.getElementById('approvalMessage');
+            const statusDiv = document.getElementById('approvalStatus');
+            
+            messageDiv.textContent = 'Checking status...';
+            messageDiv.className = 'modal-message info';
+            statusDiv.className = 'approval-status';
+            
+            try {
+                const response = await fetch('/api/check-approval', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.approved) {
+                        messageDiv.textContent = result.message;
+                        messageDiv.className = 'modal-message success';
+                        statusDiv.innerHTML = `
+                            <h3>✓ Application Approved!</h3>
+                            <p><span class="status-approved">Your application has been approved!</span></p>
+                            <p><strong>Name:</strong> ${result.user.name}</p>
+                            <p><strong>Email:</strong> ${result.user.email}</p>
+                            <p><strong>Proxy Username:</strong> ${result.user.username}</p>
+                            <p>You can now access the Helios system with your username and password.</p>
+                        `;
+                        statusDiv.classList.add('show');
+                    } else {
+                        messageDiv.textContent = result.message;
+                        messageDiv.className = 'modal-message info';
+                        statusDiv.innerHTML = `
+                            <h3>Application Under Review</h3>
+                            <p><span class="status-pending">Status: ${result.status.charAt(0).toUpperCase() + result.status.slice(1)}</span></p>
+                            <p>Your application is still being reviewed. We will notify you via email once a decision has been made.</p>
+                            <p>Please check your email regularly for updates.</p>
+                        `;
+                        statusDiv.classList.add('show');
+                    }
+                } else {
+                    messageDiv.textContent = result.message || 'Invalid credentials';
+                    messageDiv.className = 'modal-message error';
+                }
+            } catch (error) {
+                messageDiv.textContent = 'Error checking status. Please try again.';
+                messageDiv.className = 'modal-message error';
+                console.error('Error:', error);
+            }
+        }
+
+        async function requestPasswordChange(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('changeEmail').value.trim();
+            const messageDiv = document.getElementById('passwordChangeMessage');
+            
+            messageDiv.textContent = 'Sending request...';
+            messageDiv.className = 'modal-message info';
+            
+            try {
+                const response = await fetch('/api/request-password-change', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    messageDiv.textContent = result.message;
+                    messageDiv.className = 'modal-message success';
+                    document.getElementById('passwordChangeForm').reset();
+                    setTimeout(() => {
+                        closeLoginModal();
+                    }, 2000);
+                } else {
+                    messageDiv.textContent = result.message || 'Error sending request';
+                    messageDiv.className = 'modal-message error';
+                }
+            } catch (error) {
+                messageDiv.textContent = 'Error sending request. Please try again.';
+                messageDiv.className = 'modal-message error';
+                console.error('Error:', error);
+            }
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('loginModal');
+            if (event.target === modal) {
+                closeLoginModal();
+            }
+        }
+    </script>
+</body>
+</html>

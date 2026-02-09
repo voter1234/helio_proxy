@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helios - Sign Up</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #E8C547 0%, #D4A946 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-button-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 15px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .login-button-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%) !important;
+            color: white !important;
+            padding: 12px 24px !important;
+            border: 2px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            flex: unset !important;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+        }
+
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .modal h2 {
+            color: #333;
+            margin-bottom: 20px;
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        .login-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: #DAA520;
+            border-bottom-color: #DAA520;
+        }
+
+        .tab-button:hover {
+            color: #DAA520;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .modal label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .modal input[type="email"],
+        .modal input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .modal input[type="email"]:focus,
+        .modal input[type="password"]:focus {
+            outline: none;
+            border-color: #DAA520;
+            box-shadow: 0 0 5px rgba(218, 165, 32, 0.3);
+        }
+
+        .modal button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #E8C547 0%, #D4A946 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .modal button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(232, 197, 71, 0.4);
+        }
+
+        .modal button[type="submit"]:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .modal-message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+            font-weight: 500;
+        }
+
+        .modal-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .modal-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .modal-message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .approval-status {
+            background-color: #f0f4ff;
+            border-left: 4px solid #DAA520;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .approval-status.show {
+            display: block;
+        }
+
+        .approval-status h3 {
+            color: #DAA520;
+            margin-bottom: 10px;
+        }
+
+        .approval-status p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .approval-status p:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-approved {
+            color: #155724;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            color: #856404;
+            font-weight: 600;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #DAA520;
+            box-shadow: 0 0 5px rgba(218, 165, 32, 0.3);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+            padding-right: 40px;
+        }
+
+        .email-display {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #E8C547;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sign Up</h1>
+        <p class="subtitle">Helios</p>
+        
+        <form id="signupForm">
+            <div class="form-group">
+                <label>Email Address</label>
+                <div class="email-display" id="emailDisplay"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Username (for Proxy Login) <span class="required">*</span></label>
+                <input type="text" id="username" name="username" required placeholder="Choose your proxy username">
+            </div>
+
+            <div class="form-group">
+                <label for="fullName">Full Name <span class="required">*</span></label>
+                <input type="text" id="fullName" name="full_name" required placeholder="Enter your full name">
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">Last Name <span class="required">*</span></label>
+                <input type="text" id="lastName" name="last_name" required placeholder="Enter your last name">
+            </div>
+
+            <div class="form-group">
+                <label for="yearLevel">Year Level <span class="required">*</span></label>
+                <select id="yearLevel" name="year_level" required>
+                    <option value="">-- Select Year Level --</option>
+                    {% for year in years %}
+                        <option value="{{ year }}">Year {{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="house">House <span class="required">*</span></label>
+                <select id="house" name="house" required>
+                    <option value="">-- Select House --</option>
+                    {% for house in houses %}
+                        <option value="{{ house }}">{{ house }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password <span class="required">*</span></label>
+                <input type="password" id="password" name="password" required placeholder="Enter a strong password">
+            </div>
+
+            <button type="submit">Complete Sign Up</button>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+            </div>
+
+            <div class="message" id="message"></div>
+        </form>
+    </div>
+
+    <script>
+        // Display the verified email on page load
+        window.addEventListener('load', function() {
+            const email = '{{ email }}';
+            document.getElementById('emailDisplay').textContent = email;
+        });
+
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const loading = document.getElementById('loading');
+            const message = document.getElementById('message');
+            
+            // Clear previous messages
+            message.classList.remove('success', 'error');
+            message.textContent = '';
+            loading.style.display = 'none';
+
+            // Collect form data
+            const formData = {
+                username: document.getElementById('username').value.trim(),
+                full_name: document.getElementById('fullName').value.trim(),
+                last_name: document.getElementById('lastName').value.trim(),
+                year_level: document.getElementById('yearLevel').value,
+                house: document.getElementById('house').value,
+                password: document.getElementById('password').value
+            };
+
+            // Basic client-side validation
+            if (!formData.username || !formData.full_name || !formData.last_name || !formData.year_level || !formData.house || !formData.password) {
+                message.textContent = 'Please fill in all required fields';
+                message.classList.add('error');
+                return;
+            }
+
+            // Validate password length
+            if (formData.password.length < 6) {
+                message.textContent = 'Password must be at least 6 characters long';
+                message.classList.add('error');
+                return;
+            }
+
+            // Show loading spinner
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/submit-signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                loading.style.display = 'none';
+
+                if (response.ok) {
+                    message.textContent = result.message;
+                    message.classList.add('success');
+                    // Redirect to review pending page
+                    setTimeout(() => {
+                        window.location.href = result.redirect || '/review-pending';
+                    }, 1500);
+                } else {
+                    message.textContent = result.message;
+                    message.classList.add('error');
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                message.textContent = 'An error occurred. Please try again.';
+                message.classList.add('error');
+                console.error('Error:', error);
+            }
+        });
+    </script>
+
+    <!-- Navigation Buttons -->
+    <div class="login-button-container">
+        <button class="login-btn" onclick="window.location.href='/terms'">Sign Up</button>
+        <button class="login-btn" onclick="window.open('https://archive.example.com', '_blank')">View Archive</button>
+        <button class="login-btn" onclick="openLoginModal()">Check Status</button>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeLoginModal()">&times;</button>
+            
+            <h2>Login</h2>
+            
+            <div class="login-tabs">
+                <button class="tab-button active" onclick="switchTab('check-approval')">Check Approval</button>
+                <button class="tab-button" onclick="switchTab('change-password')">Change Password</button>
+            </div>
+
+            <!-- Check Approval Tab -->
+            <div id="check-approval" class="tab-content active">
+                <form id="approvalForm" onsubmit="checkApproval(event)">
+                    <div class="form-group">
+                        <label for="approvalEmail">Email Address</label>
+                        <input type="email" id="approvalEmail" name="email" required placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="approvalPassword">Password</label>
+                        <input type="password" id="approvalPassword" name="password" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit">Check Status</button>
+                    <div id="approvalMessage" class="modal-message"></div>
+                    <div id="approvalStatus" class="approval-status"></div>
+                </form>
+            </div>
+
+            <!-- Change Password Tab -->
+            <div id="change-password" class="tab-content">
+                <form id="passwordChangeForm" onsubmit="requestPasswordChange(event)">
+                    <div class="form-group">
+                        <label for="changeEmail">Email Address</label>
+                        <input type="email" id="changeEmail" name="email" required placeholder="Enter your email">
+                    </div>
+                    <button type="submit">Request Password Change</button>
+                    <div id="passwordChangeMessage" class="modal-message"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openLoginModal() {
+            document.getElementById('loginModal').classList.add('show');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('show');
+            // Reset forms
+            document.getElementById('approvalForm').reset();
+            document.getElementById('passwordChangeForm').reset();
+            document.getElementById('approvalMessage').textContent = '';
+            document.getElementById('approvalMessage').className = 'modal-message';
+            document.getElementById('passwordChangeMessage').textContent = '';
+            document.getElementById('passwordChangeMessage').className = 'modal-message';
+            document.getElementById('approvalStatus').className = 'approval-status';
+        }
+
+        // Scroll fade effect for buttons
+        window.addEventListener('scroll', function() {
+            const container = document.querySelector('.login-button-container');
+            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+            
+            if (scrollTop > 300) {
+                container.classList.add('hidden');
+            } else {
+                container.classList.remove('hidden');
+            }
+        });
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Deactivate all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function checkApproval(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('approvalEmail').value.trim();
+            const password = document.getElementById('approvalPassword').value;
+            const messageDiv = document.getElementById('approvalMessage');
+            const statusDiv = document.getElementById('approvalStatus');
+            
+            messageDiv.textContent = 'Checking status...';
+            messageDiv.className = 'modal-message info';
+            statusDiv.className = 'approval-status';
+            
+            try {
+                const response = await fetch('/api/check-approval', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.approved) {
+                        messageDiv.textContent = result.message;
+                        messageDiv.className = 'modal-message success';
+                        statusDiv.innerHTML = `
+                            <h3>✓ Application Approved!</h3>
+                            <p><span class="status-approved">Your application has been approved!</span></p>
+                            <p><strong>Name:</strong> ${result.user.name}</p>
+                            <p><strong>Email:</strong> ${result.user.email}</p>
+                            <p>You can now access the Helios system with your credentials.</p>
+                        `;
+                        statusDiv.classList.add('show');
+                    } else {
+                        messageDiv.textContent = result.message;
+                        messageDiv.className = 'modal-message info';
+                        statusDiv.innerHTML = `
+                            <h3>Application Under Review</h3>
+                            <p><span class="status-pending">Status: ${result.status.charAt(0).toUpperCase() + result.status.slice(1)}</span></p>
+                            <p>Your application is still being reviewed. We will notify you via email once a decision has been made.</p>
+                            <p>Please check your email regularly for updates.</p>
+                        `;
+                        statusDiv.classList.add('show');
+                    }
+                } else {
+                    messageDiv.textContent = result.message || 'Invalid credentials';
+                    messageDiv.className = 'modal-message error';
+                }
+            } catch (error) {
+                messageDiv.textContent = 'Error checking status. Please try again.';
+                messageDiv.className = 'modal-message error';
+                console.error('Error:', error);
+            }
+        }
+
+        async function requestPasswordChange(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('changeEmail').value.trim();
+            const messageDiv = document.getElementById('passwordChangeMessage');
+            
+            messageDiv.textContent = 'Sending request...';
+            messageDiv.className = 'modal-message info';
+            
+            try {
+                const response = await fetch('/api/request-password-change', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    messageDiv.textContent = result.message;
+                    messageDiv.className = 'modal-message success';
+                    document.getElementById('passwordChangeForm').reset();
+                    setTimeout(() => {
+                        closeLoginModal();
+                    }, 2000);
+                } else {
+                    messageDiv.textContent = result.message || 'Error sending request';
+                    messageDiv.className = 'modal-message error';
+                }
+            } catch (error) {
+                messageDiv.textContent = 'Error sending request. Please try again.';
+                messageDiv.className = 'modal-message error';
+                console.error('Error:', error);
+            }
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('loginModal');
+            if (event.target === modal) {
+                closeLoginModal();
+            }
+        }
+    </script>
+</body>
+</html>
