@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # Flask Signup Application
+  signup-app:
+    image: helios-signup:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: helios-signup
+    environment:
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5000
+      - FLASK_DEBUG=False
+      - FLASK_ENV=production
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-change-this-secret-key}
+      - EMAIL_SENDER=${EMAIL_SENDER}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - EMAIL_SMTP_SERVER=${EMAIL_SMTP_SERVER:-smtp.gmail.com}
+      - EMAIL_SMTP_PORT=${EMAIL_SMTP_PORT:-587}
+      - EMAIL_ADMIN=${EMAIL_ADMIN}
+    ports:
+      - "5000:5000"
+    volumes:
+      - ${APPDATA_PATH:-./data}:/app/data
+      - ${LOGS_PATH:-./logs}:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - helios-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # HTTPS Proxy Server
+  proxy-server:
+    image: helios-signup:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: helios-proxy
+    command: python proxy.py
+    environment:
+      - LISTEN_HOST=0.0.0.0
+      - LISTEN_PORT=8080
+      - MONITOR_PORT=8081
+      - CACHE_TTL=${CACHE_TTL:-180}
+      - SESSION_TIMEOUT=${SESSION_TIMEOUT:-180}
+      - MAX_CACHED_CONNECTIONS=${MAX_CACHED_CONNECTIONS:-100}
+      - BANDWIDTH_LIMIT_MBPS=${BANDWIDTH_LIMIT_MBPS:-30}
+      - PROXY_ACCESS_START_HOUR=${PROXY_ACCESS_START_HOUR:-9}
+      - PROXY_ACCESS_START_MINUTE=${PROXY_ACCESS_START_MINUTE:-0}
+      - PROXY_ACCESS_END_HOUR=${PROXY_ACCESS_END_HOUR:-15}
+      - PROXY_ACCESS_END_MINUTE=${PROXY_ACCESS_END_MINUTE:-15}
+      - ADMIN_KEY=${ADMIN_KEY:-admin123}
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      - ${APPDATA_PATH:-./data}:/app/data
+      - ${LOGS_PATH:-./logs}:/app/logs
+    restart: unless-stopped
+    networks:
+      - helios-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      - signup-app
+
+networks:
+  helios-network:
+    driver: bridge
